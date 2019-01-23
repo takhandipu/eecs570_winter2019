@@ -38,12 +38,14 @@ void *multiply(void *arg)
     {
         for(int j=0; j<DIM; j++)
         {
+            long thread_private_tmp=0;
             for(int k=range->start; k<range->end; k++)
             {
-                pthread_mutex_lock(&lock);
-                matrix_c[i][j]+=matrix_a[i][k]*matrix_b[k][j];
-                pthread_mutex_unlock(&lock);
+                thread_private_tmp+=matrix_a[i][k]*matrix_b[k][j];
             }
+            pthread_mutex_lock(&lock);
+            matrix_c[i][j]+=thread_private_tmp;
+            pthread_mutex_unlock(&lock);
         }
     }
 }
