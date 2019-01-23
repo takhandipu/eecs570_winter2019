@@ -16,6 +16,7 @@ struct thread_args{
     int end;
 };
 
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 void init()
 {
@@ -39,7 +40,9 @@ void *multiply(void *arg)
         {
             for(int k=range->start; k<range->end; k++)
             {
+                pthread_mutex_lock(&lock);
                 matrix_c[i][j]+=matrix_a[i][k]*matrix_b[k][j];
+                pthread_mutex_unlock(&lock);
             }
         }
     }
