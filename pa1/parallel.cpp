@@ -70,6 +70,7 @@ int main(void)
     int current_start, range;
     current_start = 0;
     range = DIM / NUM_THREADS;
+    pthread_mutex_init(&lock, NULL);
     for(int i = 0; i < NUM_THREADS; i++)
     {
         work_ranges[i].start = current_start;
