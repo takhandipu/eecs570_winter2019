@@ -5,9 +5,16 @@
 
 #define DIM 1000
 
+#define NUM_THREADS 10 
+
 long matrix_a[DIM][DIM];
 long matrix_b[DIM][DIM];
 long matrix_c[DIM][DIM];
+
+struct thread_args{
+    int start;
+    int end;
+};
 
 
 void init()
@@ -25,11 +32,12 @@ void init()
 
 void *multiply(void *arg)
 {
+    struct thread_args * range = (struct thread_args *)arg;
     for(int i = 0; i<DIM; i++)
     {
         for(int j=0; j<DIM; j++)
         {
-            for(int k =0; k<DIM; k++)
+            for(int k=range->start; k<range->end; k++)
             {
                 matrix_c[i][j]+=matrix_a[i][k]*matrix_b[k][j];
             }
@@ -52,10 +60,27 @@ void print()
 
 int main(void)
 {
-    pthread_t our_first_thread;
+    pthread_t child_threads[NUM_THREADS];
+    struct thread_args work_ranges[NUM_THREADS];
+    int current_start, range;
+    current_start = 0;
+    range = DIM / NUM_THREADS;
+    for(int i = 0; i < NUM_THREADS; i++)
+    {
+        work_ranges[i].start = current_start;
+        work_ranges[i].end = current_start + range;
+        current_start+=range;
+    }
+    work_ranges[NUM_THREADS-1].end=DIM;
     init();
-    pthread_create(&our_first_thread, NULL, multiply, NULL);
-    pthread_join(our_first_thread, NULL);
+    for(int i = 0; i < NUM_THREADS; i++)
+    {
+        pthread_create(&child_threads[i], NULL, multiply, &work_ranges[i]);
+    }
+    for(int i = 0; i < NUM_THREADS; i++)
+    {
+        pthread_join(child_threads[i], NULL);
+    }
     print();
     return 0;
 }
